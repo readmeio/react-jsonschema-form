@@ -1,6 +1,6 @@
 {
   "name": "react-jsonschema-form",
-  "version": "2.0.0-alpha.1",
+  "version": "1.0.0",
   "private": true,
   "description": "monorepo for react-jsonschema-form and its themes",
   "scripts": {
@@ -26,7 +26,7 @@
     "tabWidth": 2
   },
   "license": "Apache-2.0",
-  "homepage": "https://github.com/mozilla-services/react-jsonschema-form#readme",
+  "homepage": "https://github.com/readmeio/react-jsonschema-form#readme",
   "devDependencies": {
     "husky": "^3.1.0"
   },
