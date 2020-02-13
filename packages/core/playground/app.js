@@ -536,7 +536,7 @@ class App extends Component {
         <div className="col-sm-12">
           <p style={{ textAlign: "center" }}>
             Powered by{" "}
-            <a href="https://github.com/mozilla-services/react-jsonschema-form">
+            <a href="https://github.com/readmeio/react-jsonschema-form">
               react-jsonschema-form
             </a>
             . Bootstrap themes courtesy of{" "}
