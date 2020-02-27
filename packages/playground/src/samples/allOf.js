@@ -12,7 +12,7 @@ module.exports = {
       {
         properties: {
           lorem: {
-            type: "boolean",
+            type: "number",
             minLength: 5,
           },
           ipsum: {
