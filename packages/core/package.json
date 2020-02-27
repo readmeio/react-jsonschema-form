@@ -11,7 +11,7 @@
     "lint": "eslint src test playground",
     "precommit": "lint-staged",
     "publish-to-npm": "npm run dist && npm publish",
-    "preversion": "npm run build:playground && npm run dist && npm run cs-check && npm run lint",
+    "preversion": "npm run dist && npm run cs-check && npm run lint",
     "start": "node devServer.js",
     "tdd": "cross-env NODE_ENV=test mocha --require @babel/register --watch --require ./test/setup-jsdom.js test/**/*_test.js",
     "test": "cross-env NODE_ENV=test mocha --require @babel/register --require ./test/setup-jsdom.js test/**/*_test.js",
