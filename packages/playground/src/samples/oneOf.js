@@ -3,22 +3,68 @@ module.exports = {
     type: "object",
     oneOf: [
       {
-        properties: {
-          lorem: {
-            type: "string",
-          },
-        },
-        required: ["lorem"],
+        $ref: "#/components/schemas/Cat"
       },
       {
-        properties: {
-          ipsum: {
-            type: "string",
-          },
-        },
-        required: ["ipsum"],
-      },
+        $ref: "#/components/schemas/Dog"
+      }
     ],
+    "components": {
+      "schemas": {
+        "Pet": {
+          "type": "object",
+          "required": [
+            "pet_type"
+          ],
+          "properties": {
+            "pet_type": {
+              "type": "string"
+            }
+          },
+          "discriminator": {
+            "propertyName": "pet_type"
+          }
+        },
+        "Dog": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/Pet"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "bark": {
+                  "type": "boolean"
+                },
+                "breed": {
+                  "type": "string",
+                  "enum": ["Dingo", "Husky", "Retriever", "Shepherd"]
+                }
+              }
+            }
+          ]
+        },
+        "Cat": {
+          "type": "object",
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/Pet"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "hunts": {
+                  "type": "boolean"
+                },
+                "age": {
+                  "type": "integer"
+                }
+              }
+            }
+          ]
+        },
+      }
+    }
   },
   formData: {},
 };
