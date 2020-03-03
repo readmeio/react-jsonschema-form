@@ -5,15 +5,15 @@ module.exports = {
       {
         properties: {
           lorem: {
-            type: ["string", "number"],
+            type: ["string", "boolean"],
+            default: true,
           },
         },
       },
       {
         properties: {
           lorem: {
-            type: "number",
-            minLength: 5,
+            type: "boolean",
           },
           ipsum: {
             type: "string",
