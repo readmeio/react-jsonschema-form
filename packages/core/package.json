@@ -16,7 +16,8 @@
     "tdd": "cross-env NODE_ENV=test mocha --require @babel/register --watch --require ./test/setup-jsdom.js test/**/*_test.js",
     "test": "cross-env NODE_ENV=test mocha --require @babel/register --require ./test/setup-jsdom.js test/**/*_test.js",
     "test-coverage": "cross-env NODE_ENV=test nyc --reporter=lcov mocha --require @babel/register --require ./test/setup-jsdom.js test/**/*_test.js",
-    "test-debug": "cross-env NODE_ENV=test mocha --require @babel/register --require ./test/setup-jsdom.js --debug-brk --inspect test/Form_test.js"
+    "test-debug": "cross-env NODE_ENV=test mocha --require @babel/register --require ./test/setup-jsdom.js --debug-brk --inspect test/Form_test.js",
+    "watch": "npm-watch"
   },
   "lint-staged": {
     "{src,test}/**/*.js": [
@@ -86,6 +87,7 @@
     "mini-css-extract-plugin": "^0.4.3",
     "mocha": "^5.2.0",
     "monaco-editor-webpack-plugin": "^1.7.0",
+    "npm-watch": "^0.6.0",
     "nyc": "^13.2.0",
     "prettier": "^1.15.1",
     "react": "^16.9.0",
@@ -121,5 +123,8 @@
   "homepage": "https://github.com/readmeio/react-jsonschema-form#readme",
   "publishConfig": {
     "access": "public"
+  },
+  "watch": {
+    "dist": "{src,test}/**/*.js"
   }
 }
