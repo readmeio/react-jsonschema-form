@@ -237,6 +237,21 @@ describe("ArrayField", () => {
       expect(node.querySelectorAll(".field-string")).to.have.length.of(1);
     });
 
+    it("should add a new field when clicking the add button and the array has an empty `items` declaration", () => {
+      const { node } = createFormComponent({
+        schema: {
+          type: "array",
+          title: "my list",
+          description: "my description",
+          items: {},
+        },
+      });
+
+      Simulate.click(node.querySelector(".array-item-add button"));
+
+      expect(node.querySelectorAll(".field-string")).to.have.length.of(1);
+    });
+
     it("should assign new keys/ids when clicking the add button", () => {
       const { node } = createFormComponent({
         schema,

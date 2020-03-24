@@ -712,13 +712,13 @@ class ArrayField extends Component {
   }
 
   renderArrayFieldItem(props) {
+    let { itemSchema } = props;
     const {
       key,
       index,
       canRemove = true,
       canMoveUp = true,
       canMoveDown = true,
-      itemSchema,
       itemData,
       itemUiSchema,
       itemIdSchema,
@@ -748,6 +748,18 @@ class ArrayField extends Component {
       remove: removable && canRemove,
     };
     has.toolbar = Object.keys(has).some(key => has[key]);
+
+    // If we have an array with either an empty `items` declaration (eg. `items: {}`), we should be able to handle
+    // that as just a standard mixed type input.
+    if (
+      typeof itemSchema === "object" &&
+      itemSchema !== null &&
+      Object.keys(itemSchema).length === 0
+    ) {
+      itemSchema = {
+        type: "string",
+      };
+    }
 
     return {
       children: (
