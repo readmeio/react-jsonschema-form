@@ -657,10 +657,20 @@ export function retrieveSchema(schema, rootSchema = {}, formData = {}) {
   let resolvedSchema = resolveSchema(schema, rootSchema, formData);
   if ("allOf" in schema) {
     try {
-      resolvedSchema = mergeAllOf({
-        ...resolvedSchema,
-        allOf: resolvedSchema.allOf,
-      });
+      resolvedSchema = mergeAllOf(
+        {
+          ...resolvedSchema,
+          allOf: resolvedSchema.allOf,
+        },
+        {
+          // JSON Schema has no support for `format` on anything other than `string`, but since OpenAPI has it on
+          // `integer` and `number`, we need to add a custom resolver here so we can still merge schemas that may
+          // have those!
+          resolvers: {
+            format: obj => obj[0],
+          },
+        }
+      );
     } catch (e) {
       console.warn("could not merge subschemas in allOf:\n" + e);
       const { allOf, ...resolvedSchemaWithoutAllOf } = resolvedSchema;
