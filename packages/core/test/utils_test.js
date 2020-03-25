@@ -2382,6 +2382,26 @@ describe("utils", () => {
           default: "hi",
         });
       });
+
+      it("should properly merge schemas with a `format` property on an integer or number", () => {
+        const schema = {
+          allOf: [
+            {
+              type: "integer",
+              format: "int32",
+            },
+            {
+              type: "integer",
+            },
+          ],
+        };
+        const definitions = {};
+        const formData = {};
+        expect(retrieveSchema(schema, { definitions }, formData)).eql({
+          type: "integer",
+          format: "int32",
+        });
+      });
     });
   });
 
