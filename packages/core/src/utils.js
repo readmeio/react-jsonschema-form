@@ -663,10 +663,14 @@ export function retrieveSchema(schema, rootSchema = {}, formData = {}) {
           allOf: resolvedSchema.allOf,
         },
         {
-          // JSON Schema has no support for `format` on anything other than `string`, but since OpenAPI has it on
-          // `integer` and `number`, we need to add a custom resolver here so we can still merge schemas that may
-          // have those!
           resolvers: {
+            // JSON Schema's support for examples is relegated to the `examples` property. If we have this instead, let
+            // it be!
+            example: obj => obj[0],
+
+            // JSON Schema has no support for `format` on anything other than `string`, but since OpenAPI has it on
+            // `integer` and `number`, we need to add a custom resolver here so we can still merge schemas that may
+            // have those!
             format: obj => obj[0],
           },
         }

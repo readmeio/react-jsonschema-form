@@ -2383,6 +2383,27 @@ describe("utils", () => {
         });
       });
 
+      it("should properly merge schemas with a `example` property", () => {
+        const schema = {
+          allOf: [
+            {
+              type: "object",
+            },
+          ],
+          example: {
+            tktk: "tktk",
+          },
+        };
+        const definitions = {};
+        const formData = {};
+        expect(retrieveSchema(schema, { definitions }, formData)).eql({
+          example: {
+            tktk: "tktk",
+          },
+          type: "object",
+        });
+      });
+
       it("should properly merge schemas with a `format` property on an integer or number", () => {
         const schema = {
           allOf: [
