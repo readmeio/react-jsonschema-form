@@ -7,6 +7,7 @@ import * as types from "../../types";
 import {
   isMultiSelect,
   isSelect,
+  isCyclic,
   retrieveSchema,
   toIdSchema,
   getDefaultRegistry,
@@ -248,6 +249,11 @@ function SchemaFieldRender(props) {
     toIdSchema(schema, null, rootSchema, formData, idPrefix),
     idSchema
   );
+
+  if (props.schema.$ref && isCyclic(props.schema.$ref, rootSchema)) {
+    return null;
+  }
+
   const FieldComponent = getFieldComponent(
     schema,
     uiSchema,

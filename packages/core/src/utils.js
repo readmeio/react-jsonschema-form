@@ -93,6 +93,53 @@ export function getSchemaType(schema) {
   return type;
 }
 
+// detects whether a definition references itself recursively
+export function isCyclic($ref, definitions) {
+  const rootSchema = findSchemaDefinition($ref, definitions);
+  const traversedDefinitions = {};
+
+  traversedDefinitions[$ref] = true;
+
+  const recurse = schema => {
+    if ("$ref" in schema) {
+      if (traversedDefinitions[schema.$ref]) {
+        return true;
+      }
+      traversedDefinitions[schema.$ref] = true;
+      const refSchema = findSchemaDefinition(schema.$ref, definitions);
+      return recurse(refSchema);
+    }
+
+    // schema.allOf instead of schema.type
+    switch (schema.type) {
+      case "object":
+        if (!schema.properties) {
+          return false;
+        }
+
+        return Object.keys(schema.properties).reduce((acc, key) => {
+          return acc && recurse(schema.properties[key]);
+        }, true);
+
+      case "array":
+        // if its an array with no items
+        if (!schema.items.length) {
+          return false;
+        }
+        return schema.items
+          .map(item => {
+            return recurse(item);
+          })
+          .reduce((total, key) => {
+            return total && key;
+          }, true);
+    }
+    return false;
+  };
+
+  return recurse(rootSchema);
+}
+
 export function getWidget(schema, widget, registeredWidgets = {}) {
   const type = getSchemaType(schema);
 
@@ -174,6 +221,11 @@ function computeDefaults(
   } else if ("$ref" in schema) {
     // Use referenced schema defaults for this node.
     const refSchema = findSchemaDefinition(schema.$ref, rootSchema);
+
+    if (isCyclic(schema.$ref, rootSchema)) {
+      return undefined;
+    }
+
     return computeDefaults(
       refSchema,
       defaults,
@@ -970,6 +1022,9 @@ export function toIdSchema(
   const idSchema = {
     $id: id || idPrefix,
   };
+  if (schema.$ref && isCyclic(schema.$ref, rootSchema)) {
+    return idSchema;
+  }
   if ("$ref" in schema || "dependencies" in schema || "allOf" in schema) {
     const _schema = retrieveSchema(schema, rootSchema, formData);
     return toIdSchema(_schema, id, rootSchema, formData, idPrefix);

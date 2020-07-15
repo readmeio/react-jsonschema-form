@@ -131,6 +131,30 @@ describe("utils", () => {
         ).to.eql({ object: { string: "foo" } });
       });
 
+      it("should catch infinite recursion", () => {
+        const schema = {
+          type: "object",
+          definitions: {
+            node: {
+              type: "object",
+              properties: {
+                otherNode: {
+                  $ref: "#/definitions/node",
+                },
+              },
+            },
+          },
+          properties: {
+            tree: {
+              title: "Recursive references",
+              $ref: "#/definitions/node",
+            },
+          },
+        };
+        const result = getDefaultFormState(schema, undefined, schema);
+        expect(result).eql({});
+      });
+
       it("should map schema array default to form state", () => {
         expect(
           getDefaultFormState({
