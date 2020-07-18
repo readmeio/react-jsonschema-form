@@ -411,7 +411,7 @@ describeRepeated("Form common", createFormComponent => {
       expect(node.querySelectorAll("input[type=text]")).to.have.length.of(1);
     });
 
-    it("should handle multiple schema definition references", () => {
+    it("hould recursively handle refer multiple schema definition references", () => {
       const schema = {
         definitions: {
           testdef: { type: "string" },
@@ -592,30 +592,6 @@ describeRepeated("Form common", createFormComponent => {
       Simulate.click(node.querySelector(".btn-add"));
 
       expect(node.querySelector("input[type=number]").value).eql("0");
-    });
-
-    it("should recursively handle referenced definitions", () => {
-      const schema = {
-        $ref: "#/definitions/node",
-        definitions: {
-          node: {
-            type: "object",
-            properties: {
-              name: { type: "string" },
-              children: {
-                type: "array",
-                items: {
-                  $ref: "#/definitions/node",
-                },
-              },
-            },
-          },
-        },
-      };
-
-      const { node } = createFormComponent({ schema });
-
-      expect(node.querySelector("#root_children_0_name")).to.not.exist;
     });
 
     it("should follow recursive references", () => {
