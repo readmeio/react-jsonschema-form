@@ -616,10 +616,6 @@ describeRepeated("Form common", createFormComponent => {
       const { node } = createFormComponent({ schema });
 
       expect(node.querySelector("#root_children_0_name")).to.not.exist;
-
-      Simulate.click(node.querySelector(".array-item-add button"));
-
-      expect(node.querySelector("#root_children_0_name")).to.exist;
     });
 
     it("should follow recursive references", () => {
