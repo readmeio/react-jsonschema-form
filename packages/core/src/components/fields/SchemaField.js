@@ -241,18 +241,19 @@ function SchemaFieldRender(props) {
     wasPropertyKeyModified = false,
   } = props;
   const { rootSchema, fields, formContext } = registry;
+  if (isCyclic(props.schema, rootSchema)) {
+    return null;
+  }
+
   const FieldTemplate =
     uiSchema["ui:FieldTemplate"] || registry.FieldTemplate || DefaultTemplate;
   let idSchema = props.idSchema;
   const schema = retrieveSchema(props.schema, rootSchema, formData);
+
   idSchema = mergeObjects(
     toIdSchema(schema, null, rootSchema, formData, idPrefix),
     idSchema
   );
-
-  if (props.schema.$ref && isCyclic(props.schema.$ref, rootSchema)) {
-    return null;
-  }
 
   const FieldComponent = getFieldComponent(
     schema,

@@ -93,51 +93,72 @@ export function getSchemaType(schema) {
   return type;
 }
 
-// detects whether a definition references itself recursively
-export function isCyclic($ref, definitions) {
-  const rootSchema = findSchemaDefinition($ref, definitions);
-  const traversedDefinitions = {};
+// detects whether a schema references itself recursively
+export function isCyclic(schema, rootSchema) {
+  const traversed = new Set();
 
-  traversedDefinitions[$ref] = true;
+  /**
+   * Helper fn to recurse into children
+   * @param  {Array} children   The target array
+   * @return {Boolean}          Returns whether there was a cyclic event in the children
+   */
+  const checkChildren = children => {
+    return children.reduce((acc, child) => {
+      return Boolean(check(child) | acc);
+    }, false);
+  };
 
-  const recurse = schema => {
+  const check = schema => {
+    // handling of malformed data
+    if (typeof schema === "undefined" || typeof schema !== "object") {
+      return false;
+    }
+
+    if (traversed.has(schema)) {
+      return true;
+    }
+
+    traversed.add(schema);
+
     if ("$ref" in schema) {
-      if (traversedDefinitions[schema.$ref]) {
-        return true;
-      }
-      traversedDefinitions[schema.$ref] = true;
-      const refSchema = findSchemaDefinition(schema.$ref, definitions);
-      return recurse(refSchema);
+      const refSchema = findSchemaDefinition(schema.$ref, rootSchema);
+      const result = check(refSchema);
+      traversed.delete(schema); // we need to delete here because siblings can refer to the same definition
+      return result;
     }
 
-    // schema.allOf instead of schema.type
     switch (schema.type) {
-      case "object":
+      case "object": {
         if (!schema.properties) {
+          traversed.delete(schema);
           return false;
         }
-
-        return Object.keys(schema.properties).reduce((acc, key) => {
-          return acc && recurse(schema.properties[key]);
-        }, true);
-
-      case "array":
-        // if its an array with no items
-        if (!schema.items.length) {
-          return false;
+        const result = checkChildren(Object.values(schema.properties));
+        traversed.delete(schema);
+        return result;
+      }
+      case "array": {
+        if (Array.isArray(schema.items)) {
+          const result = checkChildren(schema.items);
+          traversed.delete(schema);
+          return result;
+        } else {
+          const result = check(schema.items);
+          traversed.delete(schema);
+          return result;
         }
-        return schema.items
-          .map(item => {
-            return recurse(item);
-          })
-          .reduce((total, key) => {
-            return total && key;
-          }, true);
+      }
     }
+
+    // edge case to handle the scan at the root
+    if (schema === rootSchema && schema.definitions) {
+      return checkChildren(Object.values(schema.definitions));
+    }
+    traversed.delete(schema);
     return false;
   };
 
-  return recurse(rootSchema);
+  return check(schema);
 }
 
 export function getWidget(schema, widget, registeredWidgets = {}) {
@@ -211,6 +232,7 @@ function computeDefaults(
   const formData = isObject(rawFormData) ? rawFormData : {};
   // Compute the defaults recursively: give highest priority to deepest nodes.
   let defaults = parentDefaults;
+
   if (isObject(defaults) && isObject(schema.default)) {
     // For object defaults, only override parent defaults that are defined in
     // schema.default.
@@ -222,7 +244,7 @@ function computeDefaults(
     // Use referenced schema defaults for this node.
     const refSchema = findSchemaDefinition(schema.$ref, rootSchema);
 
-    if (isCyclic(schema.$ref, rootSchema)) {
+    if (isCyclic(schema, rootSchema)) {
       return undefined;
     }
 
@@ -1022,9 +1044,11 @@ export function toIdSchema(
   const idSchema = {
     $id: id || idPrefix,
   };
-  if (schema.$ref && isCyclic(schema.$ref, rootSchema)) {
+
+  if (isCyclic(schema, rootSchema)) {
     return idSchema;
   }
+
   if ("$ref" in schema || "dependencies" in schema || "allOf" in schema) {
     const _schema = retrieveSchema(schema, rootSchema, formData);
     return toIdSchema(_schema, id, rootSchema, formData, idPrefix);

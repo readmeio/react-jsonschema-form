@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import React from "react";
+import circularRef from "./fixtures/circular-ref.json";
 
 import {
   ADDITIONAL_PROPERTY_FLAG,
@@ -17,6 +18,7 @@ import {
   mergeDefaultsWithFormData,
   mergeObjects,
   pad,
+  isCyclic,
   parseDateString,
   retrieveSchema,
   shouldRender,
@@ -129,30 +131,6 @@ describe("utils", () => {
             },
           })
         ).to.eql({ object: { string: "foo" } });
-      });
-
-      it("should catch infinite recursion", () => {
-        const schema = {
-          type: "object",
-          definitions: {
-            node: {
-              type: "object",
-              properties: {
-                otherNode: {
-                  $ref: "#/definitions/node",
-                },
-              },
-            },
-          },
-          properties: {
-            tree: {
-              title: "Recursive references",
-              $ref: "#/definitions/node",
-            },
-          },
-        };
-        const result = getDefaultFormState(schema, undefined, schema);
-        expect(result).eql({});
       });
 
       it("should map schema array default to form state", () => {
@@ -2778,6 +2756,27 @@ describe("utils", () => {
         bar: { $id: "rjsf_bar" },
       });
     });
+
+    it("should handle circular referencing", () => {
+      console.log("whoa dude");
+      const treeSchema = {
+        properties: {},
+      };
+      treeSchema.properties.tree = treeSchema;
+      const rootSchema = {
+        definitions: {},
+        properties: {
+          tree: treeSchema,
+        },
+        type: "object",
+      };
+
+      const result = toIdSchema(treeSchema, null, rootSchema);
+
+      expect(result).eql({
+        $id: "root",
+      });
+    });
   });
 
   describe("toPathSchema", () => {
@@ -3662,5 +3661,133 @@ describe("utils", () => {
       const Widget = React.memo(props => <div {...props} />);
       expect(getWidget(schema, Widget)({})).eql(<Widget options={{}} />);
     });
+  });
+});
+
+describe("Utils.isCyclic", () => {
+  it("should catch inifinite recursion via circular referencing", () => {
+    const schema = {
+      type: "object",
+      definitions: {},
+      properties: {
+        foo: {
+          type: "object",
+          properties: {},
+        },
+      },
+    };
+    schema.properties.foo.properties.foo = schema.properties.foo;
+    const result = isCyclic(schema.properties.foo, undefined, schema);
+    expect(result).eql(true);
+  });
+
+  it("should catch infinite recursion via $ref", () => {
+    const schema = {
+      type: "object",
+      definitions: {
+        node: {
+          type: "object",
+          properties: {
+            otherNode: {
+              $ref: "#/definitions/node",
+            },
+          },
+        },
+      },
+      properties: {
+        tree: {
+          title: "Recursive references",
+          $ref: "#/definitions/node",
+        },
+      },
+    };
+    const result = isCyclic(schema, schema);
+    expect(result).eql(true);
+  });
+
+  it("should catch infinite recursion via $ref", () => {
+    const result = isCyclic(circularRef, circularRef);
+    expect(result).eql(true);
+  });
+
+  it("should return false for non-circular schemas", () => {
+    const schema = {
+      type: "object",
+      definitions: {
+        node: {
+          type: "object",
+          properties: {},
+        },
+      },
+      properties: {
+        tree: {
+          title: "Recursive references",
+          $ref: "#/definitions/node",
+        },
+      },
+    };
+    const result = isCyclic(schema, schema);
+    expect(result).eql(false);
+  });
+
+  it("should handle multiple references to the same definition", () => {
+    const schema = {
+      definitions: {
+        testdef: { type: "string" },
+      },
+      type: "object",
+      properties: {
+        foo: { $ref: "#/definitions/testdef" },
+        bar: { $ref: "#/definitions/testdef" },
+      },
+    };
+    const result = isCyclic(schema, schema);
+    expect(result).eql(false);
+  });
+
+  it("should check type array where array = [{}]", () => {
+    const schema = {
+      type: "object",
+      definitions: {
+        node: {
+          type: "array",
+          items: [
+            {
+              $ref: "#/definitions/node",
+            },
+          ],
+        },
+      },
+      properties: {
+        tree: {
+          title: "Recursive references",
+          $ref: "#/definitions/node",
+        },
+      },
+    };
+    const result = isCyclic(schema, schema);
+    expect(result).eql(true);
+  });
+
+  it("should check type array where array = {}", () => {
+    const schema = {
+      type: "object",
+      definitions: {
+        node: {
+          type: "array",
+          items: {
+            $ref: "#/definitions/node",
+          },
+        },
+      },
+      properties: {
+        tree: {
+          title: "Recursive references",
+          $ref: "#/definitions/node",
+        },
+      },
+    };
+    const result = isCyclic(schema, schema);
+    expect(result).eql(true);
   });
 });
