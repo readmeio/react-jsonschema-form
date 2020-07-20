@@ -3784,4 +3784,78 @@ describe("Utils.isCyclic", () => {
     const result = isCyclic(schema, schema);
     expect(result).eql(true);
   });
+
+  describe("anyOf, allOf, oneOf", () => {
+    it("should support anyOf", () => {
+      const schema = {
+        anyOf: [{ $ref: "#/definitions/node" }],
+        definitions: {
+          node: {
+            type: "array",
+            items: {
+              $ref: "#/definitions/node",
+            },
+          },
+        },
+      };
+
+      const result = isCyclic(schema, schema);
+      expect(result).eql(true);
+    });
+
+    it("should support allOf", () => {
+      const schema = {
+        allOf: [{ $ref: "#/definitions/node" }],
+        definitions: {
+          node: {
+            type: "array",
+            items: {
+              $ref: "#/definitions/node",
+            },
+          },
+        },
+      };
+
+      const result = isCyclic(schema, schema);
+      expect(result).eql(true);
+    });
+
+    it("should support oneOf", () => {
+      const schema = {
+        oneOf: [{ $ref: "#/definitions/node" }],
+        definitions: {
+          node: {
+            type: "array",
+            items: {
+              $ref: "#/definitions/node",
+            },
+          },
+        },
+      };
+
+      const result = isCyclic(schema, schema);
+      expect(result).eql(true);
+    });
+
+    it("should support the nesting of anyOf", () => {
+      const schema = {
+        anyOf: [
+          {
+            allOf: [{ $ref: "#/definitions/node" }],
+          },
+        ],
+        definitions: {
+          node: {
+            type: "array",
+            items: {
+              $ref: "#/definitions/node",
+            },
+          },
+        },
+      };
+
+      const result = isCyclic(schema, schema);
+      expect(result).eql(true);
+    });
+  });
 });

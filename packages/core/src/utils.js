@@ -127,6 +127,14 @@ export function isCyclic(schema, rootSchema) {
       return result;
     }
 
+    if ("anyOf" in schema || "allOf" in schema || "oneOf" in schema) {
+      const result = checkChildren(
+        Object.values(schema.anyOf || schema.allOf || schema.oneOf)
+      );
+      traversed.delete(schema);
+      return result;
+    }
+
     switch (schema.type) {
       case "object": {
         if (!schema.properties) {
