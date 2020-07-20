@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import React from "react";
-import circularRef from "./fixtures/circular-ref.json";
 
 import {
   ADDITIONAL_PROPERTY_FLAG,
@@ -3702,11 +3701,6 @@ describe("Utils.isCyclic", () => {
       },
     };
     const result = isCyclic(schema, schema);
-    expect(result).eql(true);
-  });
-
-  it("should catch infinite recursion via $ref", () => {
-    const result = isCyclic(circularRef, circularRef);
     expect(result).eql(true);
   });
 
