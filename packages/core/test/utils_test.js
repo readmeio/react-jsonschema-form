@@ -2757,7 +2757,6 @@ describe("utils", () => {
     });
 
     it("should handle circular referencing", () => {
-      console.log("whoa dude");
       const treeSchema = {
         properties: {},
       };
