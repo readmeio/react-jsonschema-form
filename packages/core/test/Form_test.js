@@ -411,7 +411,7 @@ describeRepeated("Form common", createFormComponent => {
       expect(node.querySelectorAll("input[type=text]")).to.have.length.of(1);
     });
 
-    it("hould recursively handle refer multiple schema definition references", () => {
+    it("should recursively handle refer multiple schema definition references", () => {
       const schema = {
         definitions: {
           testdef: { type: "string" },
