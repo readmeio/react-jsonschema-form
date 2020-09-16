@@ -241,7 +241,7 @@ function SchemaFieldRender(props) {
     wasPropertyKeyModified = false,
   } = props;
   const { rootSchema, fields, formContext } = registry;
-  if (isCyclic(props.schema, rootSchema)) {
+  if (isCyclic(props.schema, rootSchema, { array: false })) {
     return null;
   }
 
