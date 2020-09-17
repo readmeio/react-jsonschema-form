@@ -255,7 +255,7 @@ function computeDefaults(
     // Use referenced schema defaults for this node.
     const refSchema = findSchemaDefinition(schema.$ref, rootSchema);
 
-    if (isCyclic(schema, rootSchema, { array: false })) {
+    if (isCyclic(schema, rootSchema)) {
       return undefined;
     }
 
@@ -1056,7 +1056,7 @@ export function toIdSchema(
     $id: id || idPrefix,
   };
 
-  if (isCyclic(schema, rootSchema, { array: false })) {
+  if (isCyclic(schema, rootSchema)) {
     return idSchema;
   }
 
