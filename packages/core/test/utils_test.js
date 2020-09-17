@@ -3675,7 +3675,7 @@ describe("Utils.isCyclic", () => {
       },
     };
     schema.properties.foo.properties.foo = schema.properties.foo;
-    const result = isCyclic(schema.properties.foo, undefined, schema);
+    const result = isCyclic(schema.properties.foo, undefined);
     expect(result).eql(true);
   });
 
@@ -3760,6 +3760,94 @@ describe("Utils.isCyclic", () => {
     };
     const result = isCyclic(schema, schema);
     expect(result).eql(true);
+  });
+
+  it("should add an option for omitting running for arrays", () => {
+    const schema = {
+      type: "object",
+      definitions: {
+        tree: {
+          $ref: "#/definitions/branch",
+        },
+        branch: {
+          type: "object",
+          properties: {
+            leaves: {
+              $ref: "#/definitions/seed",
+            },
+          },
+        },
+        seed: {
+          type: "array",
+          items: [
+            {
+              $ref: "#/definitions/tree",
+            },
+          ],
+        },
+      },
+      properties: {
+        myTree: {
+          $ref: "#/definitions/tree",
+        },
+      },
+    };
+    const result = isCyclic(schema, schema, { array: false });
+    expect(result).eql(false);
+  });
+
+  it("should pass on a schema that is cyclical, but not in a way that will recurse against itself", () => {
+    const schema = {
+      type: "object",
+      properties: {
+        dateTime: { type: "string", format: "date-time" },
+        offsetAfter: { $ref: "#/definitions/offset" },
+        offsetBefore: { $ref: "#/definitions/offset" },
+      },
+    };
+
+    const rootSchema = {
+      definitions: {
+        offset: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            rules: { $ref: "#/definitions/rules" },
+          },
+        },
+        offsetTransition: {
+          type: "object",
+          properties: {
+            dateTime: { type: "string", format: "date-time" },
+            offsetAfter: { $ref: "#/definitions/offset" },
+            offsetBefore: { $ref: "#/definitions/offset" },
+          },
+        },
+        rules: {
+          type: "object",
+          properties: {
+            transitions: {
+              type: "array",
+              items: { $ref: "#/definitions/offsetTransition" },
+            },
+          },
+        },
+      },
+      properties: {
+        rules: {
+          type: "object",
+          properties: {
+            transitions: {
+              type: "array",
+              items: { $ref: "#/definitions/offsetTransition" },
+            },
+          },
+        },
+      },
+    };
+
+    const result = isCyclic(schema, rootSchema, { array: false });
+    expect(result).eql(false);
   });
 
   it("should check type array where array = {}", () => {

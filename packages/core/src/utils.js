@@ -94,7 +94,7 @@ export function getSchemaType(schema) {
 }
 
 // detects whether a schema references itself recursively
-export function isCyclic(schema, rootSchema) {
+export function isCyclic(schema, rootSchema, options = { array: true }) {
   const traversed = new Set();
 
   /**
@@ -104,7 +104,9 @@ export function isCyclic(schema, rootSchema) {
    */
   const checkChildren = children => {
     return children.reduce((acc, child) => {
-      return Boolean(check(child) | acc);
+      const result = Boolean(check(child) | acc);
+      traversed.delete(child);
+      return result;
     }, false);
   };
 
@@ -146,6 +148,9 @@ export function isCyclic(schema, rootSchema) {
         return result;
       }
       case "array": {
+        if (!options.array) {
+          return false; // we don't want to be proactive about checking for definitions in arrays
+        }
         if (Array.isArray(schema.items)) {
           const result = checkChildren(schema.items);
           traversed.delete(schema);
