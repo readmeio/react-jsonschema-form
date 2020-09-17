@@ -7,6 +7,7 @@ import * as types from "../../types";
 import {
   isMultiSelect,
   isSelect,
+  isCyclic,
   retrieveSchema,
   toIdSchema,
   getDefaultRegistry,
@@ -240,6 +241,9 @@ function SchemaFieldRender(props) {
     wasPropertyKeyModified = false,
   } = props;
   const { rootSchema, fields, formContext } = registry;
+  if (isCyclic(props.schema, rootSchema, { array: false })) {
+    return null;
+  }
 
   const FieldTemplate =
     uiSchema["ui:FieldTemplate"] || registry.FieldTemplate || DefaultTemplate;
