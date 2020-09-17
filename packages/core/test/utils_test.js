@@ -3796,6 +3796,60 @@ describe("Utils.isCyclic", () => {
     expect(result).eql(false);
   });
 
+  it("should pass on a schema that is cyclical, but not in a way that will recurse against itself", () => {
+    const schema = {
+      type: "object",
+      properties: {
+        dateTime: { type: "string", format: "date-time" },
+        offsetAfter: { $ref: "#/definitions/offset" },
+        offsetBefore: { $ref: "#/definitions/offset" },
+      },
+    };
+
+    const rootSchema = {
+      definitions: {
+        offset: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            rules: { $ref: "#/definitions/rules" },
+          },
+        },
+        offsetTransition: {
+          type: "object",
+          properties: {
+            dateTime: { type: "string", format: "date-time" },
+            offsetAfter: { $ref: "#/definitions/offset" },
+            offsetBefore: { $ref: "#/definitions/offset" },
+          },
+        },
+        rules: {
+          type: "object",
+          properties: {
+            transitions: {
+              type: "array",
+              items: { $ref: "#/definitions/offsetTransition" },
+            },
+          },
+        },
+      },
+      properties: {
+        rules: {
+          type: "object",
+          properties: {
+            transitions: {
+              type: "array",
+              items: { $ref: "#/definitions/offsetTransition" },
+            },
+          },
+        },
+      },
+    };
+
+    const result = isCyclic(schema, rootSchema, { array: false });
+    expect(result).eql(false);
+  });
+
   it("should check type array where array = {}", () => {
     const schema = {
       type: "object",

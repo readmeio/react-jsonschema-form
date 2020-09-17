@@ -104,7 +104,9 @@ export function isCyclic(schema, rootSchema, options = { array: true }) {
    */
   const checkChildren = children => {
     return children.reduce((acc, child) => {
-      return Boolean(check(child) | acc);
+      const result = Boolean(check(child) | acc);
+      traversed.delete(child);
+      return result;
     }, false);
   };
 
