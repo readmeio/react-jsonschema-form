@@ -8,7 +8,7 @@ import {
   retrieveSchema,
   getDefaultFormState,
   getMatchingOption,
-  deepEquals,
+  // deepEquals,
 } from "../../utils";
 
 class AnyOfField extends Component {
@@ -22,7 +22,7 @@ class AnyOfField extends Component {
     };
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  /* componentDidUpdate(prevProps, prevState) {
     if (
       !deepEquals(this.props.formData, prevProps.formData) &&
       this.props.idSchema.$id === prevProps.idSchema.$id
@@ -40,7 +40,7 @@ class AnyOfField extends Component {
         selectedOption: matchingOption,
       });
     }
-  }
+  } */
 
   getMatchingOption(formData, options) {
     const { rootSchema } = this.props.registry;
